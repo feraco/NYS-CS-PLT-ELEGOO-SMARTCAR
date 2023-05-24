@@ -1,0 +1,47 @@
+void ApplicationFunctionSet::ApplicationFunctionSet_DriveIntoObject(void)
+{
+  static bool first_is = true;
+  static bool obstacleDetected = false;
+  
+  // Check if the current mode is DriveIntoObject mode
+  if (Application_SmartRobotCarxxx0.Functional_Mode == DriveIntoObject_mode)
+  {
+    if (first_is == true)
+    {
+      // Enter the mode for the first time and set the servo to 90 degrees
+      AppServo.DeviceDriverSet_Servo_control(90 /*Position_angle*/);
+      first_is = false;
+    }
+    
+    // Check if the car has left the ground
+    if (Car_LeaveTheGround == false)
+    {
+      // Stop the car's motion and return from the function
+      ApplicationFunctionSet_SmartRobotCarMotionControl(stop_it, 0);
+      return;
+    }
+
+    uint16_t distance;
+    AppULTRASONIC.DeviceDriverSet_ULTRASONIC_Get(&distance /*out*/);
+    
+    // Check if obstacle is detected within a certain range
+    if (function_xxx(distance, 0, 50))
+    {
+      obstacleDetected = true;
+      // Drive into the object at maximum speed
+      ApplicationFunctionSet_SmartRobotCarMotionControl(Forward, 255); // Adjust speed as needed
+    }
+    
+    if (!obstacleDetected)
+    {
+      // Move the car in a circular motion
+      ApplicationFunctionSet_SmartRobotCarMotionControl(Left, 100); // Adjust speed and direction as needed
+    }
+  }
+  else
+  {
+    // Reset the flags if the mode is not DriveIntoObject mode
+    first_is = true;
+    obstacleDetected = false;
+  }
+}
