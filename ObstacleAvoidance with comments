@@ -1,3 +1,21 @@
+Explanation of numbers:
+
+90: Initial position angle (in degrees) of the servo motor.
+0 and 20: The range (in cm) within which obstacles are detected.
+150: The speed (0-255) at which the car moves during maneuvers.
+1, 3, 5: Directions (indices) used for omnidirectional detection and avoidance maneuvers.
+500: Delay time (in milliseconds) used for backward motion during avoidance.
+Customization suggestions and their effects:
+
+Adjusting the initial servo position: Modify the value 90 to set a different initial angle for the servo motor. This can customize the starting position of the steering mechanism.
+Changing the obstacle detection range: Modify the values 0 and 20 to adjust the range within which obstacles are detected. Increasing the upper value will make the car detect obstacles from a greater distance, while decreasing it will make it detect obstacles only when they are closer.
+Modifying the speed of maneuvers: Adjust the value 150 to change the speed at which the car performs avoidance maneuvers. Increasing it will make the car move faster during avoidance, while decreasing it will slow down the motion.
+Enhancing avoidance behavior: You can add additional cases in the switch statement to handle more directions for avoidance maneuvers. For example, you can include cases for directions like "Backward Left" or "Backward Right" and define the corresponding motion control actions and delays. This allows for more comprehensive obstacle avoidance behavior in different scenarios.
+
+
+
+
+
 void ApplicationFunctionSet::ApplicationFunctionSet_Obstacle(void)
 {
   static bool first_is = true; // Indicates if it is the first time entering the mode
