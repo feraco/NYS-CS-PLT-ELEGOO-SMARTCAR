@@ -111,3 +111,4 @@ void ApplicationFunctionSet::ApplicationFunctionSet_Obstacle(void)
     first_is = true;
   }
 }
+
