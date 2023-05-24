@@ -1,0 +1,95 @@
+void ApplicationFunctionSet::ApplicationFunctionSet_Obstacle(void)
+{
+  static bool first_is = true; // Indicates if it is the first time entering the mode
+
+  // Check if the current mode is ObstacleAvoidance_mode
+  if (Application_SmartRobotCarxxx0.Functional_Mode == ObstacleAvoidance_mode)
+  {
+    uint8_t switc_ctrl = 0; // Controls the switch for maneuver direction
+    uint16_t get_Distance; // Stores the distance obtained from the ultrasonic sensor
+
+    // Enter the mode for the first time and set the servo to 90 degrees
+    if (first_is == true)
+    {
+      AppServo.DeviceDriverSet_Servo_control(90 /*Position_angle*/);
+      first_is = false;
+    }
+
+    // Check if the car has left the ground
+    if (Car_LeaveTheGround == false)
+    {
+      // Stop the car's motion and return from the function
+      ApplicationFunctionSet_SmartRobotCarMotionControl(stop_it, 0);
+      return;
+    }
+
+    // Get the distance from the ultrasonic sensor
+    AppULTRASONIC.DeviceDriverSet_ULTRASONIC_Get(&get_Distance /*out*/);
+
+    // Check if the distance is within the obstacle detection range (0-20 cm)
+    if (function_xxx(get_Distance, 0, 20))
+    {
+      // Stop the car's motion
+      ApplicationFunctionSet_SmartRobotCarMotionControl(stop_it, 0);
+
+      // Perform omnidirectional detection of obstacle avoidance status
+      for (uint8_t i = 1; i < 6; i += 2)
+      {
+        // Modulate the servo position for different directions
+        AppServo.DeviceDriverSet_Servo_control(30 * i /*Position_angle*/);
+        delay_xxx(1);
+
+        // Get the updated distance from the ultrasonic sensor
+        AppULTRASONIC.DeviceDriverSet_ULTRASONIC_Get(&get_Distance /*out*/);
+
+        // Check if obstacle is detected
+        if (function_xxx(get_Distance, 0, 20))
+        {
+          // Stop the car's motion
+          ApplicationFunctionSet_SmartRobotCarMotionControl(stop_it, 0);
+
+          // If obstacle is detected in all directions, perform avoidance maneuver
+          if (5 == i)
+          {
+            ApplicationFunctionSet_SmartRobotCarMotionControl(Backward, 150);
+            delay_xxx(500);
+            ApplicationFunctionSet_SmartRobotCarMotionControl(Right, 150);
+            delay_xxx(50);
+            first_is = true;
+            break;
+          }
+        }
+        else
+        {
+          switc_ctrl = 0;
+          // Perform avoidance maneuver based on the direction
+          switch (i)
+          {
+            case 1:
+              ApplicationFunctionSet_SmartRobotCarMotionControl(Right, 150);
+              break;
+            case 3:
+              ApplicationFunctionSet_SmartRobotCarMotionControl(Forward, 150);
+              break;
+            case 5:
+              ApplicationFunctionSet_SmartRobotCarMotionControl(Left, 150);
+              break;
+          }
+          delay_xxx(50);
+          first_is = true;
+          break;
+        }
+      }
+    }
+    else
+    {
+      // If distance is not within the obstacle detection range, move forward
+      ApplicationFunctionSet_SmartRobotCarMotionControl(Forward, 150);
+    }
+  }
+  else
+  {
+    // Reset the first_is variable if the mode is not ObstacleAvoidance_mode
+    first_is = true;
+  }
+}
