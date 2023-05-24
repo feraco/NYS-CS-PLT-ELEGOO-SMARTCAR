@@ -1,0 +1,124 @@
+void ApplicationFunctionSet::ApplicationFunctionSet_Follow(void)
+{
+  static uint16_t ULTRASONIC_Get = 0;
+  static uint8_t Position_Servo = 1;
+  static uint8_t timestamp = 3;
+  static uint8_t OneCycle = 1;
+  static bool first_is = true;
+
+  // Check if the current mode is Follow_mode
+  if (Application_SmartRobotCarxxx0.Functional_Mode == Follow_mode)
+  {
+    if (first_is == true)
+    {
+      // Enter the mode for the first time and set the servo to 90 degrees
+      AppServo.DeviceDriverSet_Servo_control(90 /*Position_angle*/);
+      first_is = false;
+    }
+
+    // Check if the car has left the ground
+    if (Car_LeaveTheGround == false)
+    {
+      // Stop the car's motion and return from the function
+      ApplicationFunctionSet_SmartRobotCarMotionControl(stop_it, 0);
+      return;
+    }
+
+    // Get the distance from the ultrasonic sensor
+    AppULTRASONIC.DeviceDriverSet_ULTRASONIC_Get(&ULTRASONIC_Get /*out*/);
+
+    // Check if there is an obstacle within 20 cm ahead (adjustable)
+    if (false == function_xxx(ULTRASONIC_Get, 0, 20))
+    {
+      // Stop the car's motion
+      ApplicationFunctionSet_SmartRobotCarMotionControl(stop_it, 0);
+
+      static unsigned long time_Servo = 0;
+      static uint8_t Position_Servo_xx = 0;
+
+      // Check if the servo has been in a position for 1000 milliseconds (adjustable)
+      if (millis() - time_Servo > 1000)
+      {
+        timestamp = 3;
+        Position_Servo += 1;
+        OneCycle += 1;
+
+        if (OneCycle > 4)
+        {
+          Position_Servo = 1;
+          OneCycle = 5;
+        }
+      }
+
+      if (timestamp == 3)
+      {
+        if (Position_Servo_xx != Position_Servo)
+        {
+          Position_Servo_xx = Position_Servo;
+
+          // Adjust the servo position based on the current cycle
+          if (Position_Servo == 1)
+          {
+            time_Servo = millis();
+            AppServo.DeviceDriverSet_Servo_control(80 /*Position_angle*/);
+          }
+          else if (Position_Servo == 2)
+          {
+            time_Servo = millis();
+            AppServo.DeviceDriverSet_Servo_control(20 /*Position_angle*/);
+          }
+          else if (Position_Servo == 3)
+          {
+            time_Servo = millis();
+            AppServo.DeviceDriverSet_Servo_control(80 /*Position_angle*/);
+          }
+          else if (Position_Servo == 4)
+          {
+            time_Servo = millis();
+            AppServo.DeviceDriverSet_Servo_control(150 /*Position_angle*/);
+          }
+        }
+      }
+      else
+      {
+        if (timestamp == 1)
+        {
+          timestamp = 2;
+          time_Servo = millis();
+        }
+      }
+    }
+    else
+    {
+      OneCycle = 1;
+      timestamp = 1;
+      
+      if ((Position_Servo == 1))
+      {
+        // Control the car to move forward
+        ApplicationFunctionSet_SmartRobotCarMotionControl(Forward, 100);
+      }
+      else if ((Position_Servo == 2))
+      {
+        // Control the car to move forward and right
+        ApplicationFunctionSet_SmartRobotCarMotionControl(Right, 150);
+      }
+      else if ((Position_Servo == 3))
+      {
+        // Control the car to move forward
+        ApplicationFunctionSet_SmartRobotCarMotionControl(Forward, 100);
+      }
+      else if ((Position_Servo == 4))
+      {
+        // Control the car to move forward and left
+        ApplicationFunctionSet_SmartRobotCarMotionControl(Left, 150);
+      }
+    }
+  }
+  else
+  {
+    // Reset variables if the mode is not Follow_mode
+    ULTRASONIC_Get = 0;
+    first_is = true;
+  }
+}
